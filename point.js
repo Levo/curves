@@ -15,5 +15,3 @@ point.prototype.mp = function(p){
 	returnPoint.set(x,y);
 	return returnPoint;
 }
-
-
