@@ -1,0 +1,144 @@
+
+<head>
+    <script type="text/javascript" src="point.js"></script>    
+
+</head>
+    <body>
+      <canvas id="myCanvas" width="1240" height="1240" style="background-color:FFFFF; "></canvas>
+
+
+
+          <script>
+
+            document.onkeydown = function(event){
+                if(event.keyCode == '49'){
+                   FirstOrLast = true;
+                   draw = true;
+                }
+                if(event.keyCode == '50'){    
+                    FirstOrLast = false;
+                    draw = true;
+                }
+                if(event.keyCode == '81'){
+                    swapDrawPoints = true;
+                }
+                if(event.keyCode == '87'){
+                    swapDrawPoints = false;
+                }
+            }
+            
+            function BeizerCurve(p0,p1,p2,p3){
+
+                var p01 = p0.mp(p1);
+                var p12 = p1.mp(p2);
+                var p23 = p2.mp(p3);
+
+                var p012 = p01.mp(p12);
+                var p123 = p12.mp(p23);
+
+                var p0123 = p012.mp(p123);
+
+                var dx = p3.pos.x - p0.pos.x;
+                var dy = p3.pos.y - p0.pos.y;
+
+                var d2 = Math.abs(((p1.pos.x - p3.pos.x) * dy - (p1.pos.y - p3.pos.y) * dx));
+                var d3 = Math.abs(((p2.pos.x - p3.pos.x) * dy - (p2.pos.y - p3.pos.y) * dx));
+
+                var someValue = 0.25;
+
+                if((d2 + d3)*(d2 + d3) < someValue *(dx*dx + dy*dy)){
+                    points.push(p0123);
+                    return;
+                }else{
+                    BeizerCurve(p0,p01,p012,p0123);
+                    BeizerCurve(p0123,p123,p23,p3);
+                }
+
+            }
+
+            function drawCurve(){
+                points.push(p3);
+                for(var i = 0; i < points.length - 1; i++){
+                    context.beginPath();
+                    context.strokeStyle = "red";
+                    context.lineWidth = 2;
+                    context.moveTo(points[i].pos.x, points[i].pos.y);
+                    context.lineTo(points[i+1].pos.x, points[i+1].pos.y);
+                    context.stroke();
+                    context.closePath();
+                }
+            }
+
+            function drawPoint(p){
+                context.beginPath();
+                context.fillStyle = 'green';
+                context.arc(p.pos.x, p.pos.y, 5.0, 0, 2*Math.PI);
+                context.fill();
+
+            }
+
+            function animate(canvas, context) {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                BeizerCurve(p0,p1,p2,p3);
+                drawCurve();    
+            }
+
+
+            function moveInitialPoints(){
+                // Adds mouse move event listener to the canvas
+                document.body.addEventListener("mousemove", function( event ) { 
+                    if(FirstOrLast && draw && swapDrawPoints){
+                        p0.pos.x = event.pageX;
+                        p0.pos.y = event.pageY;
+                    }else if(!FirstOrLast && draw && swapDrawPoints){
+                        p3.pos.x = event.pageX;
+                        p3.pos.y = event.pageY;
+                    }
+                    if(FirstOrLast && draw && !swapDrawPoints){
+                        p1.pos.x = event.pageX;
+                        p1.pos.y = event.pageY;
+                    }else if(!FirstOrLast && draw && !swapDrawPoints){
+                        p2.pos.x = event.pageX;
+                        p2.pos.y = event.pageY;
+                    }
+                    Curve();
+                }, false);
+                 document.body.addEventListener("mousedown", function( event ) { 
+                    draw = false;
+                }, false);
+            }
+
+            function Curve(){
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                points = [];
+                points.push(p0);
+                BeizerCurve(p0,p1,p2,p3);
+                drawPoint(p0);
+                drawPoint(p1);
+                drawPoint(p2);  
+                drawPoint(p3);
+                drawCurve();   
+            }
+
+            var draw = true;
+            var FirstOrLast = true;
+            var swapDrawPoints = true;
+
+            var points = [];
+            var p0 = new point(50,150);
+            var p1 = new point(50,50);
+            var p2 = new point(125,75);
+            var p3 = new point(175,135);
+            points.push(p0);
+
+            var mos = {x:0,y:0};
+
+            var canvas = document.getElementById('myCanvas');
+            var context = canvas.getContext('2d');
+            var oldMouse = {x:0, y:0};
+
+            animate(canvas,context);
+            moveInitialPoints();
+
+          </script>
+</body>
